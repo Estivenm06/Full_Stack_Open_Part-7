@@ -4,6 +4,7 @@ import BlogSlice, { setBlog } from "./bloglistReducer";
 import loginSlice from "./loginReducer";
 import blogService from "../src/services/blogs";
 import userSlice from './usersReducer'
+import CommentsSlice from './commentsReducer'
 
 export const store = configureStore({
   reducer: {
@@ -11,6 +12,7 @@ export const store = configureStore({
     notification: notificationSlice,
     login: loginSlice,
     users: userSlice,
+    comments: CommentsSlice,
   },
 });
 

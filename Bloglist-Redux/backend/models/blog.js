@@ -24,6 +24,12 @@ const blogSchema = new Schema({
       ref: "User",
     },
   ],
+  comments: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Comments"
+    }
+  ]
 });
 
 blogSchema.set("toJSON", {

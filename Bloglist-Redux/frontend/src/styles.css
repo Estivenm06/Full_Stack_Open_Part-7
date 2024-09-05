@@ -21,3 +21,12 @@
 .hidden {
   display: none;
 }
+
+.header {
+  display: flex;
+  background-color: rgb(190, 190, 190);
+}
+
+#item {
+  padding: 0.2em;
+}

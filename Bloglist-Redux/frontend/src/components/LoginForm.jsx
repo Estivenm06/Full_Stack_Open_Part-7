@@ -1,5 +1,6 @@
 import Proptypes from "prop-types";
-
+import { Button } from "@mui/material";
+import { TextField } from "@mui/material";
 const LoginForm = ({
   handleLogin,
   username,
@@ -12,27 +13,27 @@ const LoginForm = ({
       <h2>log in to application</h2>
       <div>
         username
-        <input
+        <TextField
           data-testid="username"
           type="text"
           value={username}
           name="Username"
-          id="username"
           onChange={handleUsernameChange}
         />
       </div>
       <div>
         password
-        <input
+        <TextField
           data-testid="password"
           type="password"
-          name="password"
           value={password}
-          id="password"
+          name="password"
           onChange={handlePasswordChange}
         />
       </div>
-      <button type="submit">login</button>
+      <Button variant="contained" type="submit">
+        Login
+      </Button>
     </form>
   );
 };
