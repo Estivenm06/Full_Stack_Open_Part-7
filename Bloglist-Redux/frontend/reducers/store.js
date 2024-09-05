@@ -3,12 +3,14 @@ import notificationSlice from "./notificationReducer";
 import BlogSlice, { setBlog } from "./bloglistReducer";
 import loginSlice from "./loginReducer";
 import blogService from "../src/services/blogs";
+import userSlice from './usersReducer'
 
 export const store = configureStore({
   reducer: {
     blogslist: BlogSlice,
     notification: notificationSlice,
     login: loginSlice,
+    users: userSlice,
   },
 });
 

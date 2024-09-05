@@ -14,7 +14,7 @@ const loginSlice = createSlice({
     },
     check: (state, action) => {
       return action.payload;
-    },
+    }
   },
 });
 
