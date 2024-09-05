@@ -1,34 +1,28 @@
 import { useState, useEffect, useRef } from "react";
 import Blog from "./components/Blog";
-import blogService from "./services/blogs";
-import loginService from "./services/login";
-import Error from "./components/Error";
+import { getAll, create, setToken, update } from "./services/blogs";
+import { login } from "./services/login";
+import Notification from "./components/Notification";
 import LoginForm from "./components/LoginForm";
 import CreateForm from "./components/CreateForm";
 import Togglable from "./components/Togglable";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { createNotification } from "./reducers/notificationReducer";
+import { createUser } from "./reducers/UserReducer";
+import { useContext } from "react";
 import "./styles.css";
 
 const App = () => {
-  const [blogs, setBlogs] = useState([]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [user, setUser] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null);
-
-  useEffect(() => {
-    blogService.getAll().then((blogs) => setBlogs(blogs));
-  }, []);
+  const [notification, dispatch] = useContext(createNotification);
+  const [user, dispatchUser] = useContext(createUser);
 
   useEffect(() => {
     try {
-      const localStorage = window.localStorage.getItem("loggedUserBlog");
-      if (localStorage) {
-        const user = JSON.parse(localStorage);
-        setUser(user);
-        blogService.setToken(user.token);
-      }
+      checkIfLogged();
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }, []);
 
@@ -37,18 +31,27 @@ const App = () => {
   const addBlog = async (noteObject) => {
     blogFormRef.current.toggleVisibility();
     try {
-      const returnedBlog = await blogService.create(noteObject);
-      setBlogs([...blogs, returnedBlog]);
-      setErrorMessage(
-        <div className="errorGreen">{`a new blog ${noteObject.title} by ${noteObject.author}`}</div>,
-      );
+      createNewBlog.mutate(noteObject);
+      dispatch({
+        type: "set_notification",
+        payload: {
+          message: `a new blog ${noteObject.title} by ${noteObject.author}`,
+          className: "errorGreen",
+        },
+      });
       setTimeout(() => {
-        setErrorMessage(null);
+        dispatch({ type: "delete_notification" });
       }, 5000);
     } catch (error) {
-      setErrorMessage(<div className="errorRed">{`${error}`}</div>);
+      dispatch({
+        type: "set_notification",
+        payload: {
+          message: `${error}`,
+          className: "errorRed",
+        },
+      });
       setTimeout(() => {
-        setErrorMessage(null);
+        dispatch({ type: "delete_notification" });
       }, 5000);
     }
   };
@@ -81,41 +84,82 @@ const App = () => {
     try {
       window.localStorage.removeItem("loggedUserBlog");
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
   const handleLogin = async (event) => {
     event.preventDefault();
-
     try {
-      const user = await loginService.login({
-        username,
-        password,
-      });
-      window.localStorage.setItem("loggedUserBlog", JSON.stringify(user));
-      setUser(user);
-      blogService.setToken(user.token);
+      await loginWith({ username, password });
       setUsername("");
       setPassword("");
     } catch (error) {
-      setErrorMessage(
-        <div className="errorRed">Wrong username or password</div>,
-      );
+      dispatch({
+        type: "set_notification",
+        payload: {
+          message: "Wrong username or password",
+          className: "errorRed",
+        },
+      });
       setTimeout(() => {
-        setErrorMessage(null);
+        dispatch({ type: "delete_notification" });
       }, 5000);
     }
   };
 
   const handleLikes = async (id) => {
     const blogIndex = blogs.find((n) => n.id === id);
-    const blogLikes = { ...blogIndex, likes: blogIndex.likes + 1 };
-    await blogService.update(id, blogLikes).then((returnedLikes) => {
-      setBlogs(blogs.map((blog) => (blog.id !== id ? blog : returnedLikes)));
-    });
+    const blogToUpdate = { ...blogIndex, likes: blogIndex.likes + 1 };
+    likeBlog(id, blogToUpdate);
   };
-
+  //Query
+  const queryClient = useQueryClient();
+  //Blogs
+  const {
+    data: blogs,
+    isLoading: blogsLoading,
+    error: blogError,
+  } = useQuery({
+    queryKey: ["blogs"],
+    queryFn: getAll,
+    initialData: [],
+  });
+  //Loading
+  if (blogsLoading) return <div>Loading blogs...</div>;
+  //Blogs Requests
+  const createNewBlog = useMutation({
+    mutationFn: create,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blogs"] });
+    },
+    refetchOnWindowFocus: false,
+  });
+  const updateBlogMutation = useMutation({
+    mutationFn: update,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["blogs"] });
+    },
+    refetchOnWindowFocus: false,
+  });
+  const likeBlog = (id, blog) => {
+    updateBlogMutation.mutate({ id, blog });
+  };
+  //User request
+  const loginWith = async (credentials) => {
+    const user = await login(credentials);
+    window.localStorage.setItem("loggedUserBlog", JSON.stringify(user));
+    setToken(user.token);
+    dispatchUser({ type: "login", payload: user });
+  };
+  const checkIfLogged = () => {
+    const localStorage = window.localStorage.getItem("loggedUserBlog");
+    if (localStorage) {
+      const user = JSON.parse(localStorage);
+      setToken(user.token);
+      dispatchUser({ type: "check", payload: JSON.parse(localStorage) });
+    }
+  };
   const blogSorted = blogs.sort((a, b) => {
     return b.likes - a.likes;
   });
@@ -123,7 +167,7 @@ const App = () => {
   return (
     <div>
       <h2>Blogs</h2>
-      <Error error={errorMessage} />
+      <Notification />
       {user === null ? (
         loginForm()
       ) : (
@@ -139,7 +183,6 @@ const App = () => {
               blog={blog}
               blogs={blogs}
               user={user}
-              setBlogs={setBlogs}
               handleLikes={() => handleLikes(blog.id)}
               buttonLabel="view"
             />

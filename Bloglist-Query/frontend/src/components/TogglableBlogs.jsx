@@ -1,22 +1,6 @@
 import { useState } from "react";
-import blogService from "../services/blogs";
-
-const handleDelete = async (id, user, blogs, setBlogs) => {
-  try {
-    const blogIndex = blogs.find((n) => n.id === id);
-    if (blogIndex.user[0].id === user.id) {
-      if (
-        window.confirm(`Remove blog ${blogIndex.title} by ${blogIndex.author}`)
-      ) {
-        await blogService.del(blogIndex.id).then((response) => {
-          setBlogs(blogs.filter((n) => n.id !== id));
-        });
-      }
-    }
-  } catch (exception) {
-    console.log(exception);
-  }
-};
+import { del } from "../services/blogs";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 
 const TogglableBlogs = ({
   title,
@@ -29,18 +13,42 @@ const TogglableBlogs = ({
   user,
   id,
   blogs,
-  setBlogs,
 }) => {
   const [visible, setVisible] = useState(false);
   const hideWhenVisible = { display: visible ? "none" : "" };
   const shownWhenVisible = { display: visible ? "" : "none" };
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: del,
+    onSuccess: () => {
+      queryClient.invalidateQueries(["blogs"]);
+    },
+  });
+
+  const deleteBlog = (id) => {
+    deleteMutation.mutate(id);
+  };
 
   const toggleVisibility = () => {
     setVisible(!visible);
   };
 
-  const handle = () => {
-    handleDelete(id, user, blogs, setBlogs);
+  const handle = async () => {
+    try {
+      const blogIndex = blogs.find((n) => n.id === id);
+      if (blogIndex.user[0].id === user.id) {
+        if (
+          window.confirm(
+            `Remove blog ${blogIndex.title} by ${blogIndex.author}`,
+          )
+        ) {
+          deleteBlog(blogIndex.id);
+        }
+      }
+    } catch (exception) {
+      console.log(exception);
+    }
   };
 
   const canDelete = () => {

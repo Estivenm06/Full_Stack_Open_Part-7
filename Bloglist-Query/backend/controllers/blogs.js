@@ -17,7 +17,10 @@ blogRouter.get("/:id", async (request, response) => {
 
 blogRouter.post("/", async (request, response, next) => {
   const { title, author, url, likes } = request.body;
+  console.log(request.body);
+  console.log(request);
   const user = request.user;
+  console.log(user);
 
   const blog = new Blog({
     title: title,

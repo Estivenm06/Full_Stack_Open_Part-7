@@ -1,15 +1,7 @@
 import Proptypes from "prop-types";
 import TogglableBlogs from "./TogglableBlogs";
 
-const Blog = ({
-  blog,
-  handleLikes,
-  buttonLabel,
-  user,
-  id,
-  blogs,
-  setBlogs,
-}) => {
+const Blog = ({ blog, handleLikes, buttonLabel, user, id, blogs }) => {
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 5,
@@ -29,7 +21,6 @@ const Blog = ({
         buttonLabel={buttonLabel}
         user={user}
         blogs={blogs}
-        setBlogs={setBlogs}
         id={id}
       ></TogglableBlogs>
     </div>

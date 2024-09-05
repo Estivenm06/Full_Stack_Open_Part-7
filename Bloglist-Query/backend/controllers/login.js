@@ -4,6 +4,7 @@ const loginRouter = require("express").Router();
 const User = require("../models/user");
 
 loginRouter.post("/", async (request, response) => {
+  console.log(request.body);
   const { username, password } = request.body;
 
   const user = await User.findOne({ username: username });
@@ -23,7 +24,12 @@ loginRouter.post("/", async (request, response) => {
     expiresIn: 60 * 60,
   });
 
-  response.send({ token: token, username: user.username, name: user.name });
+  response.send({
+    token: token,
+    username: user.username,
+    name: user.name,
+    id: user._id,
+  });
 });
 
 module.exports = loginRouter;
