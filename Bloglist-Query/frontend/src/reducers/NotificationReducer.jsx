@@ -1,4 +1,7 @@
-import { createContext, useReducer, useContext } from "react";
+/* eslint-disable semi */
+/* eslint-disable linebreak-style */
+/* eslint-disable quotes */
+import { createContext, useReducer } from "react";
 
 const notificationReducer = (state = null, action) => {
   switch (action.type) {

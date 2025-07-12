@@ -3,7 +3,6 @@ import {
   Routes,
   Route,
   Link,
-  Navigate,
   useMatch,
   useNavigate,
 } from "react-router-dom";

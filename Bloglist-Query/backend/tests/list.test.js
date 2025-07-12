@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const {
   dummy,
   totalLikes,
@@ -78,9 +79,9 @@ describe("total likes", () => {
     expect(result).toBe(5);
   });
   test("of a bigger is calculated right", () => {
-    const result = totalLikes(blogs);
-    expect(result).toBe(36);
-  });
+    const result = totalLikes(blogs)
+    expect(result).toBe(36)
+  })
 });
 
 describe("favorites", () => {
@@ -101,13 +102,13 @@ describe("favorites", () => {
 describe("mostBlogs", () => {
   test("who has most larguest amount of blogs", () => {
     const result = mostBlogs(blogs);
-    expect(result).toEqual({ author: "Robert C. Martin", blogs: 3 });
+    expect(result).toEqual({author: "Robert C. Martin", blogs: 3})
   });
 });
 
 describe("mostLikes", () => {
   test("who has tthe most larguest amount of likes", () => {
-    const result = mostLikes(blogs);
-    expect(result).toEqual({ author: "Edsger W. Dijkstra", likes: 17 });
-  });
-});
+    const result = mostLikes(blogs)
+    expect(result).toEqual({author: "Edsger W. Dijkstra", likes: 17})
+  })
+})

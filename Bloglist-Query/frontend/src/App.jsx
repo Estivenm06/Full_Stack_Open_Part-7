@@ -1,3 +1,6 @@
+/* eslint-disable quotes */
+/* eslint-disable semi */
+/* eslint-disable linebreak-style */
 import { useState, useEffect, useRef } from "react";
 import Blog from "./components/Blog";
 import { getAll, create, setToken, update } from "./services/blogs";

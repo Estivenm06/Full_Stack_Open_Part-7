@@ -1,83 +1,37 @@
-import React, { useState, useEffect } from "react";
-import request from "./services/request";
+import React, { useState } from "react";
 
-const useField = (type) => {
-  const [value, setValue] = useState("");
-
-  const onChange = (event) => {
-    setValue(event.target.value);
-  };
-
-  return {
-    type,
-    value,
-    onChange,
-  };
-};
-
-const useCountry = (name) => {
-  const [country, setCountry] = useState(null);
-  try {
-    useEffect(() => {
-      request.getAll().then((res) => setCountry(res));
-    }, [country, name]);
-    const countrytoFind = country.find((e) =>
-      e.name.common.toUpperCase().includes(name.toUpperCase())
-    );
-    return countrytoFind;
-  } catch (error) {
-    console.log(error.message);
-  }
-  return country;
-};
-
-const Country = ({ country }) => {
-  if (!country) {
-    return <div>not found...</div>;
-  }
-
-  return (
-    <div>
-      <h3>{country.name.common}</h3>
-      <div>capital {country.capital} </div>
-      <div>population {country.population}</div>
-      <img
-        src={country.flags.png}
-        height="100"
-        alt={`flag of ${country.name.common}`}
-      />
-    </div>
-  );
-};
+import { useField } from "./hook/useField";
+import { useCountry } from "./hook/useCountry";
+import { Country } from "./components/Country";
 
 const App = () => {
-  try {
     const nameInput = useField("text");
-    const [name, setName] = useState("");
-    const country = useCountry(name);
-    const countryToShow =
-      name.toUpperCase() === country.name.common.toUpperCase()
-        ? country
-        : false;
+    const [country, setCountry] = useState([]);
 
-    const fetch = (e) => {
+    const onSubmit = async (e) => {
       e.preventDefault();
-      setName(nameInput.value);
+      const name = e.target.querySelector('input').value;
+      if(name.trim() === '') {
+        alert('Input is empty.')
+        return;
+      }
+      const {country} = await useCountry(name);
+      setCountry([country]);
     };
 
     return (
       <div>
-        <form onSubmit={fetch}>
+        <form onSubmit={onSubmit}>
           <input {...nameInput} />
           <button>find</button>
         </form>
-
-        <Country country={countryToShow} />
+        {country.length !== 0 ? (
+          <Country country={country[0]} />
+        ): (
+          <div>No country to search...</div>
+        )}
       </div>
     );
-  } catch (error) {
-    console.log(error.message);
-  }
 };
 
 export default App;

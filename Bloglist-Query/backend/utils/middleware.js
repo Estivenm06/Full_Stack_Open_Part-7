@@ -1,58 +1,63 @@
-const jwt = require("jsonwebtoken");
-const User = require("../models/user");
-require("dotenv").config();
+/* eslint-disable no-undef */
+const jwt = require("jsonwebtoken")
+const User = require("../models/user")
 const requestLogger = (request, response, next) => {
-  console.log("Method", request.method);
-  console.log("Path ", request.path);
-  console.log("Body ", request.body);
-  console.log("---");
-  next();
-};
+    console.log("Method", request.method)
+    console.log("Path ", request.path)
+    console.log("Body ", request.body)
+    console.log("---")
+    next()
+}
 
 const unknownEndpoint = (request, response) => {
-  return response.status(404).send({ error: "Unknown endpoint" });
-};
+    return response.status(404).send({error: "Unknown endpoint"})
+}
 
 const errorHandler = (error, request, response, next) => {
-  console.error(error.message);
+    console.error(error.message)
 
-  if (error.name === "ValidationError") {
-    return response.status(400).json({ error: error.message });
-  } else if (error.name === "MongoServerError") {
-    return response.status(400).json({ error: error.message });
-  } else if (error.name === "JsonWebTokenError") {
-    return response.status(401).json({ error: error.message });
-  }
-  next(error);
-};
-
-const userExtractor = async (request, response, next) => {
-  let user = null;
-  try {
-    if (request.token) {
-      const decodedToken = jwt.verify(request.token, process.env.SECRET);
-      user = await User.findById(decodedToken.id);
+      if (error.name === 'ValidationError') {
+      return response.status(400).json({ error: error.message })
+    } else if(error.name === "MongoServerError"){
+      return response.status(400).json({error: error.message})
+    } else if(error.name === "JsonWebTokenError"){
+      return response.status(401).json({error: error.message})
     }
-  } catch (err) {
-    console.error("Error verifying token", err);
+    next(error)
   }
-  request.user = user;
-  next();
-};
+  
+  const userExtractor = async (request, response, next) => {
+    let user = null;
+    try{
+      if(request.token){
+        const decodedToken = jwt.verify(request.token, process.env.SECRET)
+        console.log(decodedToken);
+        
+        user = await User.findById(decodedToken.id)
+        console.log(user);
+        request.user = user;
+      }
+    }catch(err){
+      console.error("Error verifying token", err)
+    }
+    next();
+}
+
 const tokenExtractor = (request, response, next) => {
-  const decodedToken = request.get("authorization");
-  if (decodedToken && decodedToken.startsWith("Bearer ")) {
-    request.token = decodedToken.substring(7);
-  } else {
-    request.token = null;
+  const decodedToken = request.get("authorization")
+  if(decodedToken && decodedToken.startsWith("Bearer ")){
+    request.token = decodedToken.substring(7)
+  }else{
+    request.token = null
   }
-  next();
-};
+  next()
+}
+
 
 module.exports = {
-  requestLogger,
-  unknownEndpoint,
-  errorHandler,
-  tokenExtractor,
-  userExtractor,
-};
+    requestLogger,
+    unknownEndpoint,
+    errorHandler,
+    tokenExtractor,
+    userExtractor
+}
